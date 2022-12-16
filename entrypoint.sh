@@ -37,12 +37,24 @@ ${AWS_REGION}
 text
 EOF
 
-# Sync using our dedicated profile and suppress verbose messages.
-# All other flags are optional via the `args:` directive.
-sh -c "aws s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_DIR} \
-              --profile s3-sync-action \
-              --no-progress \
-              ${ENDPOINT_APPEND} $*"
+if [ -n "$SOURCE_DIR" ]; then
+  # Sync using our dedicated profile and suppress verbose messages.
+  # All other flags are optional via the `args:` directive.
+  sh -c "aws s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_DIR} \
+                --profile s3-sync-action \
+                --no-progress \
+                ${ENDPOINT_APPEND} $*"
+fi
+
+
+if [ -n "$SOURCE_FILE" ]; then
+  # Copy single file using our dedicated profile and suppress verbose messages.
+  # All other flags are optional via the `args:` directive.
+  sh -c "aws s3 cp ${SOURCE_FILE} s3://${AWS_S3_BUCKET}/${DEST_DIR}${SOURCE_FILE} \
+                --profile s3-sync-action \
+                --no-progress \
+                ${ENDPOINT_APPEND} $*"
+fi
 
 # If a AWS_CF_DISTRIBUTION_ID was given, create an invalidation for it.
 if [ -n "$AWS_CF_DISTRIBUTION_ID" ]; then
