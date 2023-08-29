@@ -44,6 +44,21 @@ if [ -n "$SOURCE_DIR" ]; then
                 --profile s3-sync-action \
                 --no-progress \
                 ${ENDPOINT_APPEND} $*"
+
+  # the following is a hack to gzip the search_index.json file for our docs site
+  # check if the file search/search_index.json exists in the source directory
+  if [ -f "$SOURCE_DIR/search/search_index.json" ]; then
+    # gzip the search_index.json file and copy it to the destination directory without the .gz extension
+    # and with the content-encoding header set to gzip
+    sh -c "gzip -c $SOURCE_DIR/search/search_index.json | aws s3 cp - s3://${AWS_S3_BUCKET}/${DEST_DIR}search/search_index.json \
+                  --profile s3-sync-action \
+                  --no-progress \
+                  ${ENDPOINT_APPEND} \
+                  --content-encoding gzip \
+                  --content-type application/json"
+  fi
+
+
 fi
 
 
